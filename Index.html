@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Olimpíadas: Salto Acrobático</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background-color: #070a13;
+      color: #fff;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    h1 {
+      margin-bottom: 6px;
+      font-size: 22px;
+      color: #38bdf8;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      text-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+    }
+
+    #game-wrapper {
+      position: relative;
+      width: 1000px;
+      height: 600px;
+      border: 4px solid #38bdf8;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 0 35px rgba(56, 189, 248, 0.4);
+    }
+
+    /* --- MAPA DETALHADO EM CSS --- */
+    #mapa-css {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #1e293b;
+    }
+
+    /* Céu ensolarado e Nuvens */
+    .ceu {
+      position: absolute;
+      top: 0;
+      width: 100%;
+      height: 110px;
+      background: linear-gradient(to bottom, #38bdf8, #bae6fd);
+    }
+    .nuvem {
+      position: absolute;
+      background: #ffffff;
+      border-radius: 20px;
+      opacity: 0.9;
+    }
+
+    /* Floresta de Fundo */
+    .floresta {
+      position: absolute;
+      top: 80px;
+      width: 100%;
+      height: 40px;
+      background: repeating-linear-gradient(
+        45deg,
+        #15803d,
+        #15803d 15px,
+        #166534 15px,
+        #166534 30px
+      );
+    }
+
+    /* Parede da Arena e Arquibancada */
+    .parede-fundo {
+      position: absolute;
+      top: 110px;
+      width: 100%;
+      height: 110px;
+      background: #334155;
+      border-bottom: 4px solid #475569;
+    }
+
+    .arquibancada {
+      position: absolute;
+      top: 120px;
+      left: 140px;
+      width: 720px;
+      height: 80px;
+      background: #1e293b;
+      border: 3px solid #64748b;
+      border-radius: 6px;
+      display: flex;
+      justify-content: space-around;
+      padding: 5px;
+    }
+    .assentos-bloco {
+      width: 22%;
+      height: 100%;
+      background: linear-gradient(to bottom, #2563eb, #1d4ed8);
+      border-radius: 4px;
+      box-shadow: inset 0 2px 4px rgba(255,255,255,0.3);
+    }
+
+    /* Placa e Tochas Olímpicas */
+    .placa-olimpica {
+      position: absolute;
+      top: 100px;
+      left: 370px;
+      width: 260px;
+      height: 50px;
+      background: linear-gradient(to bottom, #1e3a8a, #0f172a);
+      border: 3px solid #fbbf24;
+      border-radius: 8px;
+      color: #fbbf24;
+      font-weight: 900;
+      font-size: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      box-shadow: 0 0 15px rgba(251, 191, 36, 0.4);
+      z-index: 2;
+    }
+
+    .tocha {
+      position: absolute;
+      top: 95px;
+      width: 16px;
+      height: 35px;
+      background: #94a3b8;
+      border-radius: 3px;
+      z-index: 2;
+    }
+    .fogo {
+      position: absolute;
+      top: -15px;
+      left: 1px;
+      width: 14px;
+      height: 15px;
+      background: #f97316;
+      border-radius: 50% 50% 20% 20%;
+      box-shadow: 0 0 10px #f97316, 0 0 20px #ef4444;
+      animation: chama 0.4s infinite alternate;
+    }
+    @keyframes chama {
+      from { transform: scale(1); }
+      to { transform: scale(1.2); }
+    }
+
+    /* Piso de Azulejos */
+    .piso-arena {
+      position: absolute;
+      top: 220px;
+      width: 100%;
+      height: 380px;
+      background-color: #e2e8f0;
+      background-image: 
+        radial-gradient(#cbd5e1 15%, transparent 16%),
+        radial-gradient(#cbd5e1 15%, transparent 16%);
+      background-size: 16px 16px;
+      background-position: 0 0, 8px 8px;
+    }
+
+    /* Piscina e Detalhes da Água */
+    .piscina-borda {
+      position: absolute;
+      top: 310px;
+      left: 230px;
+      width: 720px;
+      height: 250px;
+      background: #f8fafc;
+      border: 4px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 10px;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+    }
+
+    .piscina-agua {
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(to bottom, #0284c7, #0369a1);
+      border-radius: 4px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .raia-linha {
+      width: 100%;
+      height: 18%;
+      border-bottom: 3px dashed #ef4444;
+      position: relative;
+    }
+    .raia-linha::before {
+      content: '';
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-bottom: 3px dashed #ffffff;
+      top: 2px;
+    }
+
+    /* Escadas Inox da Piscina */
+    .escada-piscina {
+      position: absolute;
+      width: 12px;
+      height: 35px;
+      border: 3px solid #94a3b8;
+      border-bottom: none;
+      border-radius: 5px 5px 0 0;
+      top: 300px;
+      z-index: 3;
+    }
+
+    /* Torre e Trampolim Pro */
+    .torre-estrutura {
+      position: absolute;
+      top: 100px;
+      left: 50px;
+      width: 45px;
+      height: 220px;
+      background: repeating-linear-gradient(
+        0deg,
+        #64748b,
+        #64748b 10px,
+        #475569 10px,
+        #475569 20px
+      );
+      border: 3px solid #334155;
+      z-index: 2;
+    }
+
+    .trampolim-prancha {
+      position: absolute;
+      top: 115px;
+      left: 70px;
+      width: 160px;
+      height: 14px;
+      background: linear-gradient(to right, #06b6d4, #22d3ee);
+      border: 2px solid #0891b2;
+      border-radius: 4px;
+      box-shadow: 0 6px 12px rgba(0,0,0,0.4);
+      z-index: 3;
+    }
+
+    /* Plantas Decorativas nas Laterais */
+    .vaso-planta {
+      position: absolute;
+      bottom: 40px;
+      width: 25px;
+      height: 25px;
+      background: #78350f;
+      border-radius: 3px;
+      z-index: 2;
+    }
+    .vaso-planta::after {
+      content: '';
+      position: absolute;
+      top: -18px;
+      left: -5px;
+      width: 35px;
+      height: 22px;
+      background: #22c55e;
+      border-radius: 50%;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    /* Portal / Recompensa Neon */
+    .portal-argola {
+      position: absolute;
+      top: 230px;
+      right: 25px;
+      width: 50px;
+      height: 80px;
+      border: 5px solid #38bdf8;
+      border-radius: 50%;
+      box-shadow: 0 0 20px #38bdf8, inset 0 0 20px #38bdf8;
+      animation: pulso 1.5s infinite alternate;
+      z-index: 2;
+    }
+    @keyframes pulso {
+      from { box-shadow: 0 0 15px #38bdf8, inset 0 0 15px #38bdf8; }
+      to { box-shadow: 0 0 30px #00f0ff, inset 0 0 30px #00f0ff; }
+    }
+
+    /* Canvas (Personagem e Física) */
+    #gameCanvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 10;
+    }
+
+    .instructions {
+      margin-top: 10px;
+      background: #1e293b;
+      padding: 8px 18px;
+      border-radius: 6px;
+      text-align: center;
+      font-size: 13px;
+      border: 1px solid #334155;
+    }
+    .key {
+      background: #0f172a;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: bold;
+      color: #38bdf8;
+      border: 1px solid #38bdf8;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Olimpíadas: Salto Acrobático</h1>
+
+  <div id="game-wrapper">
+    <div id="mapa-css">
+      <!-- Céu e Nuvens -->
+      <div class="ceu">
+        <div class="nuvem" style="top: 15px; left: 80px; width: 70px; height: 20px;"></div>
+        <div class="nuvem" style="top: 30px; left: 500px; width: 100px; height: 25px;"></div>
+        <div class="nuvem" style="top: 10px; left: 820px; width: 80px; height: 22px;"></div>
+      </div>
+
+      <!-- Fundo e Arquibancada -->
+      <div class="floresta"></div>
+      <div class="parede-fundo"></div>
+
+      <div class="arquibancada">
+        <div class="assentos-bloco"></div>
+        <div class="assentos-bloco"></div>
+        <div class="assentos-bloco"></div>
+        <div class="assentos-bloco"></div>
+      </div>
+
+      <!-- Placa e Tochas -->
+      <div class="tocha" style="left: 340px;"><div class="fogo"></div></div>
+      <div class="placa-olimpica">OLIMPÍADAS<br>SALTO ACROBÁTICO</div>
+      <div class="tocha" style="left: 645px;"><div class="fogo"></div></div>
+
+      <!-- Chão -->
+      <div class="piso-arena"></div>
+
+      <!-- Plantas Decorativas -->
+      <div class="vaso-planta" style="left: 180px;"></div>
+      <div class="vaso-planta" style="left: 210px;"></div>
+      <div class="vaso-planta" style="right: 100px;"></div>
+
+      <!-- Escadas Inox -->
+      <div class="escada-piscina" style="left: 280px;"></div>
+      <div class="escada-piscina" style="left: 910px;"></div>
+
+      <!-- Piscina -->
+      <div class="piscina-borda">
+        <div class="piscina-agua">
+          <div class="raia-linha"></div>
+          <div class="raia-linha"></div>
+          <div class="raia-linha"></div>
+          <div class="raia-linha"></div>
+          <div class="raia-linha"></div>
+        </div>
+      </div>
+
+      <!-- Trampolim -->
+      <div class="torre-estrutura"></div>
+      <div class="trampolim-prancha"></div>
+
+      <!-- Portal Azul Neon -->
+      <div class="portal-argola"></div>
+    </div>
+
+    <!-- CANVAS PARA PERSONAGEM E INTERFACE -->
+    <canvas id="gameCanvas" width="1000" height="600"></canvas>
+  </div>
+
+  <div class="instructions">
+    <p>
+      <span class="key">ESPAÇO</span> = Correr e Saltar | 
+      <span class="key">A</span> / <span class="key">D</span> = Rotação | 
+      <span class="key">W</span> / <span class="key">S</span> = Impulso / Ângulo | 
+      <span class="key">R</span> = Reiniciar
+    </p>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    const STATE = { IDLE: 0, RUNNING: 1, IN_AIR: 2, WATER: 3 };
+    let currentState = STATE.IDLE;
+
+    let player = {
+      x: 75,
+      y: 98,
+      vx: 0,
+      vy: 0,
+      angle: 0,
+      rotations: 0,
+      score: 0,
+      width: 12,
+      height: 32
+    };
+
+    const GRAVITY = 0.32;
+    const WATER_Y = 320;
+    const TRAMPOLINE_TIP = 225;
+
+    const keys = {};
+
+    window.addEventListener('keydown', (e) => {
+      keys[e.key.toLowerCase()] = true;
+
+      if (e.code === 'Space') {
+        if (currentState === STATE.IDLE) {
+          currentState = STATE.RUNNING;
+        } else if (currentState === STATE.RUNNING) {
+          jump();
+        }
+      }
+
+      if (e.key.toLowerCase() === 'r') {
+        resetGame();
+      }
+    });
+
+    window.addEventListener('keyup', (e) => {
+      keys[e.key.toLowerCase()] = false;
+    });
+
+    function jump() {
+      if (currentState === STATE.IN_AIR) return;
+      currentState = STATE.IN_AIR;
+      player.vx = 3.2 + (keys['d'] ? 1.5 : 0);
+      player.vy = -7.0 - (keys['w'] ? 1.5 : 0);
+    }
+
+    function resetGame() {
+      currentState = STATE.IDLE;
+      player.x = 75;
+      player.y = 98;
+      player.vx = 0;
+      player.vy = 0;
+      player.angle = 0;
+      player.rotations = 0;
+      player.score = 0;
+    }
+
+    function update() {
+      if (currentState === STATE.RUNNING) {
+        player.x += 2.2;
+        if (player.x >= TRAMPOLINE_TIP) {
+          jump();
+        }
+      }
+
+      if (currentState === STATE.IN_AIR) {
+        player.x += player.vx;
+        player.y += player.vy;
+        player.vy += GRAVITY;
+
+        if (keys['a']) player.angle -= 12;
+        if (keys['d']) player.angle += 12;
+
+        if (keys['w']) player.y -= 0.4;
+        if (keys['s']) player.y += 0.4;
+
+        player.rotations = Math.floor(Math.abs(player.angle) / 360);
+
+        if (player.y >= WATER_Y) {
+          currentState = STATE.WATER;
+          calculateScore();
+        }
+      }
+
+      if (currentState === STATE.WATER) {
+        player.vy *= 0.82;
+        player.vx *= 0.82;
+        player.y += player.vy;
+        player.x += player.vx;
+      }
+    }
+
+    function calculateScore() {
+      let base = player.rotations * 500;
+      let angleNorm = Math.abs(player.angle) % 180;
+      
+      if (angleNorm < 25 || angleNorm > 155) {
+        base += 400;
+      }
+      player.score = base;
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Desenhar o Atleta
+      ctx.save();
+      ctx.translate(player.x, player.y);
+      ctx.rotate((player.angle * Math.PI) / 180);
+
+      // Roupa do Atleta
+      ctx.fillStyle = '#ef4444';
+      ctx.fillRect(-player.width / 2, -player.height / 2, player.width, player.height);
+
+      // Cabeça
+      ctx.fillStyle = '#fde047';
+      ctx.beginPath();
+      ctx.arc(0, -player.height / 2 - 4, 5, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.restore();
+
+      // HUD / Placa de Pontuação no Canvas
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 16px Arial';
+
+      if (currentState === STATE.IDLE) {
+        ctx.fillText('Pressione ESPAÇO para correr!', 380, 45);
+      } else if (currentState === STATE.RUNNING) {
+        ctx.fillText('Pressione ESPAÇO para saltar!', 380, 45);
+      } else if (currentState === STATE.IN_AIR) {
+        ctx.fillText(`Giros: ${player.rotations}`, 30, 40);
+        ctx.fillText(`Ângulo: ${Math.round(player.angle)}°`, 30, 65);
+      } else if (currentState === STATE.WATER) {
+        ctx.fillStyle = '#38bdf8';
+        ctx.font = 'bold 22px Arial';
+        ctx.fillText(`Salto Concluído! Giros: ${player.rotations}`, 350, 45);
+        ctx.fillText(`Pontuação: ${player.score} pts`, 350, 75);
+        ctx.font = 'bold 14px Arial';
+        ctx.fillStyle = '#ffffff';
+        ctx.fillText('Pressione R para tentar novamente', 375, 105);
+      }
+    }
+
+    function gameLoop() {
+      update();
+      draw();
+      requestAnimationFrame(gameLoop);
+    }
+
+    gameLoop();
+  </script>
+</body>
+</html>
