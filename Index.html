@@ -176,7 +176,7 @@
       position: absolute;
       top: 310px;
       left: 230px;
-      width: 680px;
+      width: 720px;
       height: 250px;
       background: #f8fafc;
       border: 4px solid #cbd5e1;
@@ -328,12 +328,14 @@
 
   <div id="game-wrapper">
     <div id="mapa-css">
+      <!-- Céu e Nuvens -->
       <div class="ceu">
         <div class="nuvem" style="top: 15px; left: 80px; width: 70px; height: 20px;"></div>
         <div class="nuvem" style="top: 30px; left: 500px; width: 100px; height: 25px;"></div>
         <div class="nuvem" style="top: 10px; left: 820px; width: 80px; height: 22px;"></div>
       </div>
 
+      <!-- Fundo e Arquibancada -->
       <div class="floresta"></div>
       <div class="parede-fundo"></div>
 
@@ -344,19 +346,24 @@
         <div class="assentos-bloco"></div>
       </div>
 
+      <!-- Placa e Tochas -->
       <div class="tocha" style="left: 340px;"><div class="fogo"></div></div>
       <div class="placa-olimpica">OLIMPÍADAS<br>SALTO ACROBÁTICO</div>
       <div class="tocha" style="left: 645px;"><div class="fogo"></div></div>
 
+      <!-- Chão -->
       <div class="piso-arena"></div>
 
+      <!-- Plantas Decorativas -->
       <div class="vaso-planta" style="left: 180px;"></div>
       <div class="vaso-planta" style="left: 210px;"></div>
       <div class="vaso-planta" style="right: 100px;"></div>
 
+      <!-- Escadas Inox -->
       <div class="escada-piscina" style="left: 280px;"></div>
-      <div class="escada-piscina" style="left: 890px;"></div>
+      <div class="escada-piscina" style="left: 910px;"></div>
 
+      <!-- Piscina -->
       <div class="piscina-borda">
         <div class="piscina-agua">
           <div class="raia-linha"></div>
@@ -367,20 +374,23 @@
         </div>
       </div>
 
+      <!-- Trampolim -->
       <div class="torre-estrutura"></div>
       <div class="trampolim-prancha"></div>
 
+      <!-- Portal Azul Neon -->
       <div class="portal-argola"></div>
     </div>
 
+    <!-- CANVAS PARA PERSONAGEM E INTERFACE -->
     <canvas id="gameCanvas" width="1000" height="600"></canvas>
   </div>
 
   <div class="instructions">
     <p>
-      <span class="key">ESPAÇO</span> = Correr/Saltar | 
-      <span class="key">A</span>/<span class="key">D</span> = Girar no Ar | 
-      <span class="key">W</span>/<span class="key">A</span>/<span class="key">S</span>/<span class="key">D</span> = Nadar na Água & Andar | 
+      <span class="key">ESPAÇO</span> = Correr e Saltar | 
+      <span class="key">A</span> / <span class="key">D</span> = Rotação | 
+      <span class="key">W</span> / <span class="key">S</span> = Impulso / Ângulo | 
       <span class="key">R</span> = Reiniciar
     </p>
   </div>
@@ -389,7 +399,7 @@
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
 
-    const STATE = { IDLE: 0, RUNNING: 1, IN_AIR: 2, WATER: 3, LAND: 4, WIN: 5 };
+    const STATE = { IDLE: 0, RUNNING: 1, IN_AIR: 2, WATER: 3 };
     let currentState = STATE.IDLE;
 
     let player = {
@@ -400,18 +410,13 @@
       angle: 0,
       rotations: 0,
       score: 0,
-      width: 14,
+      width: 12,
       height: 32
     };
 
     const GRAVITY = 0.32;
-    const WATER_Y = 330;
-    const POOL_LEFT = 240;
-    const POOL_RIGHT = 890;
-    const POOL_BOTTOM = 540;
+    const WATER_Y = 320;
     const TRAMPOLINE_TIP = 225;
-    const PORTAL_X = 950;
-    const PORTAL_Y = 270;
 
     const keys = {};
 
@@ -454,13 +459,13 @@
     }
 
     function update() {
-      // 1. Corrida
       if (currentState === STATE.RUNNING) {
         player.x += 2.2;
-        if (player.x >= TRAMPOLINE_TIP) jump();
+        if (player.x >= TRAMPOLINE_TIP) {
+          jump();
+        }
       }
 
-      // 2. Salto no Ar
       if (currentState === STATE.IN_AIR) {
         player.x += player.vx;
         player.y += player.vy;
@@ -468,52 +473,23 @@
 
         if (keys['a']) player.angle -= 12;
         if (keys['d']) player.angle += 12;
+
         if (keys['w']) player.y -= 0.4;
         if (keys['s']) player.y += 0.4;
 
         player.rotations = Math.floor(Math.abs(player.angle) / 360);
 
-        if (player.y >= WATER_Y && player.x >= POOL_LEFT && player.x <= POOL_RIGHT) {
+        if (player.y >= WATER_Y) {
           currentState = STATE.WATER;
           calculateScore();
-          player.angle = 0; // Desentorta o personagem para nadar
         }
       }
 
-      // 3. Natação na Água (Comandos W, A, S, D)
       if (currentState === STATE.WATER) {
-        const SWIM_SPEED = 2.2;
-
-        if (keys['w']) player.y -= SWIM_SPEED;
-        if (keys['s']) player.y += SWIM_SPEED;
-        if (keys['a']) player.x -= SWIM_SPEED;
-        if (keys['d']) player.x += SWIM_SPEED;
-
-        // Limites da Piscina
-        if (player.x < POOL_LEFT) player.x = POOL_LEFT;
-        if (player.y > POOL_BOTTOM) player.y = POOL_BOTTOM;
-        if (player.y < WATER_Y - 10) player.y = WATER_Y - 10;
-
-        // Tocou na Borda Direita da Piscina para Subir
-        if (player.x >= POOL_RIGHT - 10 && keys['d']) {
-          currentState = STATE.LAND;
-          player.y = 280; // Sobe no chão da arena
-        }
-      }
-
-      // 4. Andando no Chão em direção ao Anel Azul
-      if (currentState === STATE.LAND) {
-        const WALK_SPEED = 2.5;
-
-        if (keys['a']) player.x -= WALK_SPEED;
-        if (keys['d']) player.x += WALK_SPEED;
-
-        // Chegou ao Anel Olímpico Azul (Portal)
-        let dist = Math.hypot(player.x - PORTAL_X, player.y - PORTAL_Y);
-        if (dist < 30) {
-          currentState = STATE.WIN;
-          player.score += 1000; // Bônus por completar o nível
-        }
+        player.vy *= 0.82;
+        player.vx *= 0.82;
+        player.y += player.vy;
+        player.x += player.vx;
       }
     }
 
@@ -535,7 +511,7 @@
       ctx.translate(player.x, player.y);
       ctx.rotate((player.angle * Math.PI) / 180);
 
-      // Roupa
+      // Roupa do Atleta
       ctx.fillStyle = '#ef4444';
       ctx.fillRect(-player.width / 2, -player.height / 2, player.width, player.height);
 
@@ -547,7 +523,7 @@
 
       ctx.restore();
 
-      // HUD / Textos de Status
+      // HUD / Placa de Pontuação no Canvas
       ctx.fillStyle = '#ffffff';
       ctx.font = 'bold 16px Arial';
 
@@ -560,22 +536,12 @@
         ctx.fillText(`Ângulo: ${Math.round(player.angle)}°`, 30, 65);
       } else if (currentState === STATE.WATER) {
         ctx.fillStyle = '#38bdf8';
-        ctx.fillText(`Nade até a borda direita! (Use W, A, S, D)`, 340, 45);
-        ctx.font = '14px Arial';
+        ctx.font = 'bold 22px Arial';
+        ctx.fillText(`Salto Concluído! Giros: ${player.rotations}`, 350, 45);
+        ctx.fillText(`Pontuação: ${player.score} pts`, 350, 75);
+        ctx.font = 'bold 14px Arial';
         ctx.fillStyle = '#ffffff';
-        ctx.fillText(`Pontuação do Salto: ${player.score} pts`, 380, 70);
-      } else if (currentState === STATE.LAND) {
-        ctx.fillStyle = '#38bdf8';
-        ctx.fillText(`Vá até o Anel Azul para finalizar! (Use A e D)`, 320, 45);
-      } else if (currentState === STATE.WIN) {
-        ctx.fillStyle = '#00ffcc';
-        ctx.font = 'bold 24px Arial';
-        ctx.fillText(`FASE CONCLUÍDA! VICTORY!`, 340, 55);
-        ctx.font = 'bold 18px Arial';
-        ctx.fillStyle = '#ffffff';
-        ctx.fillText(`Pontuação Total: ${player.score} pts`, 385, 90);
-        ctx.font = '14px Arial';
-        ctx.fillText('Pressione R para jogar novamente', 375, 120);
+        ctx.fillText('Pressione R para tentar novamente', 375, 105);
       }
     }
 
